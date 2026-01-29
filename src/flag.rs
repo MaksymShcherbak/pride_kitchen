@@ -1,73 +1,56 @@
-use crate::{PrideFlag, SYMBOL_ASSETS};
+use crate::IMG_ASSETS;
 use dioxus::prelude::*;
-fn reduce_eye_strain(hex: &str) -> String {
-    let hex = hex.trim_start_matches('#');
-    let r = u8::from_str_radix(&hex[0..2], 16).unwrap() as f32 / 255.0;
-    let g = u8::from_str_radix(&hex[2..4], 16).unwrap() as f32 / 255.0;
-    let b = u8::from_str_radix(&hex[4..6], 16).unwrap() as f32 / 255.0;
+use serde::{Deserialize, Serialize};
+use std::cmp::Ordering;
 
-    // Detect near-grayscale
-    if (r - g).abs() < 0.02 && (r - b).abs() < 0.02 && (g - b).abs() < 0.02 {
-        let mut l = (r + g + b) / 3.0;
-        l = l.clamp(0.2, 0.85); // wider range for grays
-        let val = (l * 255.0).round() as u8;
-        return format!("#{val:02X}{val:02X}{val:02X}");
+#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
+struct Transform {
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+}
+
+#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
+pub struct SymbolData {
+    pub src: String,
+    pub single: Transform,
+    pub merged_left: Transform,
+}
+
+#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
+pub struct FlagData {
+    pub full_name: String,
+    pub name: String,
+    pub lines: Vec<String>,
+    pub symbol: Option<SymbolData>,
+    pub mirror_symbol: Option<bool>,
+    pub categories: Vec<String>,
+}
+
+impl PartialOrd for FlagData {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
+}
 
-    // Convert to HSL
-    let max = r.max(g).max(b);
-    let min = r.min(g).min(b);
-    let l = (max + min) / 2.0;
+impl Ord for FlagData {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.name.cmp(&other.name)
+    }
+}
 
-    let delta = max - min;
-    let s = if delta == 0.0 {
-        0.0
-    } else {
-        delta / (1.0 - (2.0 * l - 1.0).abs())
-    };
-
-    let h = if delta == 0.0 {
-        0.0
-    } else if max == r {
-        ((g - b) / delta).rem_euclid(6.0)
-    } else if max == g {
-        ((b - r) / delta) + 2.0
-    } else {
-        ((r - g) / delta) + 4.0
-    } * 60.0;
-
-    // Softening adjustments
-    let l = l.clamp(0.3, 0.8); // allow more contrast
-    let s = s.clamp(0.5, 0.8); // allow more saturation
-
-    // Convert back to RGB
-    let c = (1.0 - (2.0 * l - 1.0).abs()) * s;
-    let x = c * (1.0 - ((h / 60.0) % 2.0 - 1.0).abs());
-    let m = l - c / 2.0;
-
-    let (r1, g1, b1) = match h {
-        h if h < 60.0 => (c, x, 0.0),
-        h if h < 120.0 => (x, c, 0.0),
-        h if h < 180.0 => (0.0, c, x),
-        h if h < 240.0 => (0.0, x, c),
-        h if h < 300.0 => (x, 0.0, c),
-        _ => (c, 0.0, x),
-    };
-
-    let r = ((r1 + m) * 255.0).round() as u8;
-    let g = ((g1 + m) * 255.0).round() as u8;
-    let b = ((b1 + m) * 255.0).round() as u8;
-
-    format!("#{r:02X}{g:02X}{b:02X}")
+#[derive(PartialEq, Clone)]
+pub enum PrideFlag {
+    Single(FlagData),
+    Merged(FlagData, FlagData),
 }
 
 #[derive(Props, PartialEq, Clone)]
 pub struct FlagProps {
-    flag: PrideFlag,
-    id: String,
-    reduce_eye_strain: bool,
+    pub flag: PrideFlag,
+    pub id: String,
 }
-
 #[component]
 pub fn Flag(props: FlagProps) -> Element {
     let (width, height) = (250, 150);
@@ -146,7 +129,7 @@ pub fn Flag(props: FlagProps) -> Element {
     let gradient_defs = gradients.as_ref().map(|grads| {
         rsx!(
             defs {
-                for (i , (idx1 , idx2)) in grads.iter().enumerate() {
+                for (i, (idx1, idx2)) in grads.iter().enumerate() {
                     {
                         let color1 = if swapped {
                             small_lines.get(*idx1).cloned().unwrap_or_else(|| "#000000".to_string())
@@ -158,23 +141,16 @@ pub fn Flag(props: FlagProps) -> Element {
                         } else {
                             small_lines.get(*idx2).cloned().unwrap_or_else(|| "#000000".to_string())
                         };
-                        rsx! {
+
+                        rsx!(
                             linearGradient {
                                 id: format!("grad{i}"),
-                                x1: "10%",
-                                x2: "90%",
-                                y1: "0%",
-                                y2: "0%",
-                                stop {
-                                    offset: "0%",
-                                    stop_color: if props.reduce_eye_strain { reduce_eye_strain(&color1) } else { color1 },
-                                }
-                                stop {
-                                    offset: "100%",
-                                    stop_color: if props.reduce_eye_strain { reduce_eye_strain(&color2) } else { color2 },
-                                }
+                                x1: "10%", x2: "90%",
+                                y1: "0%", y2: "0%",
+                                stop { offset: "0%", stop_color: "{color1}" }
+                                stop { offset: "100%", stop_color: "{color2}" }
                             }
-                        }
+                        )
                     }
                 }
             }
@@ -196,25 +172,17 @@ pub fn Flag(props: FlagProps) -> Element {
                     height: stripe_height,
                     y: stripe_height * (i as f32),
                     fill: match &flag {
-                        PrideFlag::Single(data) => {
-                            if props.reduce_eye_strain {
-                                reduce_eye_strain(&data.lines[i].to_string())
-                            } else {
-                                data.lines[i].to_string()
-                            }
-                        }
+                        PrideFlag::Single(data) => data.lines[i].to_string(),
                         PrideFlag::Merged(_, _) => format!("url(#grad{i})"),
                     },
-                    shape_rendering: "crispEdges",
+                    shape_rendering: "crispEdges"
                 }
             }
 
             {
                 match &flag {
-                    PrideFlag::Single(data) => rsx! {
-                        if let Some(symbol) = &data.symbol
-                            && let Some(a) = SYMBOL_ASSETS.get(symbol.src.as_str())
-                        {
+                    PrideFlag::Single(data) => rsx!{
+                        if let Some(symbol) = &data.symbol && let Some(a) = IMG_ASSETS.get(symbol.src.as_str()) {
                             image {
                                 x: symbol.single.x,
                                 y: symbol.single.y,
@@ -224,10 +192,8 @@ pub fn Flag(props: FlagProps) -> Element {
                             }
                         }
                     },
-                    PrideFlag::Merged(data1, data2) => rsx! {
-                        if let Some(symbol) = &data1.symbol
-                            && let Some(a) = SYMBOL_ASSETS.get(symbol.src.as_str())
-                        {
+                    PrideFlag::Merged(data1, data2) => rsx!{
+                         if let Some(symbol) = &data1.symbol && let Some(a) = IMG_ASSETS.get(symbol.src.as_str()) {
                             image {
                                 x: symbol.merged_left.x,
                                 y: symbol.merged_left.y,
@@ -236,16 +202,16 @@ pub fn Flag(props: FlagProps) -> Element {
                                 href: "{a}",
                             }
                         }
-                        if let Some(symbol) = &data2.symbol
-                            && let Some(a) = SYMBOL_ASSETS.get(symbol.src.as_str())
-                        {
+                         if let Some(symbol) = &data2.symbol && let Some(a) = IMG_ASSETS.get(symbol.src.as_str()) {
                             image {
                                 x: width - symbol.merged_left.x - symbol.merged_left.width,
                                 y: symbol.merged_left.y,
                                 width: symbol.merged_left.width,
                                 height: symbol.merged_left.height,
                                 href: "{a}",
-                                transform: if let Some(true) = data2.mirror_symbol { format!("translate({} 0) scale(-1 1)", width - symbol.merged_left.x) } else { "" },
+                                transform: if let Some(true) = data2.mirror_symbol {
+                                    format!("translate({} 0) scale(-1 1)", width - symbol.merged_left.x)
+                                } else {"" }
                             }
                         }
                     },
