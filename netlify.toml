@@ -1,0 +1,8 @@
+[build]
+command = "rustup default stable && cargo install --locked dioxus-cli --version 0.7.3 && dx build --release"
+publish = "target/web"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
