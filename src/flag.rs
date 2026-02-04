@@ -1,220 +1,160 @@
-use crate::IMG_ASSETS;
+use crate::flag_lib::{FlagData, Position, reduce_strain};
 use dioxus::prelude::*;
-use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
-
-#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
-struct Transform {
-    x: i32,
-    y: i32,
-    width: i32,
-    height: i32,
-}
-
-#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
-pub struct SymbolData {
-    pub src: String,
-    pub single: Transform,
-    pub merged_left: Transform,
-}
-
-#[derive(PartialEq, Eq, Clone, Serialize, Deserialize)]
-pub struct FlagData {
-    pub full_name: String,
-    pub name: String,
-    pub lines: Vec<String>,
-    pub symbol: Option<SymbolData>,
-    pub mirror_symbol: Option<bool>,
-    pub categories: Vec<String>,
-}
-
-impl PartialOrd for FlagData {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for FlagData {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.name.cmp(&other.name)
-    }
-}
-
-#[derive(PartialEq, Clone)]
-pub enum PrideFlag {
-    Single(FlagData),
-    Merged(FlagData, FlagData),
-}
 
 #[derive(Props, PartialEq, Clone)]
 pub struct FlagProps {
-    pub flag: PrideFlag,
+    pub flag: FlagData,
     pub id: String,
+    pub option_icons: bool,
+    pub option_reduce_strain: bool,
+    pub option_blur: f32,
+    pub option_softness: f32,
+    // for checking compatibility
+    pub other_flag: Option<FlagData>,
 }
 #[component]
 pub fn Flag(props: FlagProps) -> Element {
     let (width, height) = (250, 150);
     let flag = props.flag;
-    let id = props.id;
+    let id = &props.id;
 
-    // Prepare big and small references
-    let (big, small, swapped) = match &flag {
-        PrideFlag::Merged(data1, data2) => {
-            if data1.lines.len() >= data2.lines.len() {
-                (data1.clone(), data2.clone(), false)
-            } else {
-                (data2.clone(), data1.clone(), true)
-            }
-        }
-        PrideFlag::Single(data) => (data.clone(), data.clone(), false),
-    };
-
-    // Clone the lines so we can modify them
-    let mut big_lines = big.lines.clone();
-    let mut small_lines = small.lines.clone();
-
-    // If the difference in line count is odd, duplicate both
-    if (big_lines.len() as isize - small_lines.len() as isize).abs() % 2 == 1 {
-        big_lines = big_lines
-            .iter()
-            .flat_map(|s| [s.clone(), s.clone()])
-            .collect();
-        small_lines = small_lines
-            .iter()
-            .flat_map(|s| [s.clone(), s.clone()])
-            .collect();
-    }
-
-    let count_big = big_lines.len();
-    let count_small = small_lines.len();
-    let count = count_big;
-    let min_count = count_small;
-    let pad_top = (count - min_count) / 2;
-    let stripe_height = (height as f32 / count as f32).round();
-    //height = (stripe_height as usize) * count;
-
-    // Precompute gradient indices for merged flags
-    let gradients = if let PrideFlag::Merged(_, _) = &flag {
-        Some(
-            (0..count)
-                .map(|i| {
-                    let idx_big = i;
-                    let idx_small = if i < pad_top {
-                        0
-                    } else if i >= pad_top + min_count {
-                        min_count - 1
+    let hardness = 49. - props.option_softness;
+    let gradients: Vec<Element> = flag
+        .lines
+        .iter()
+        .enumerate()
+        .map(|(i, line)| {
+            let stops: Vec<Element> = line
+                .iter()
+                .enumerate()
+                .map(|(j, color)| {
+                    let color = if props.option_reduce_strain {
+                        reduce_strain(&color.0)
                     } else {
-                        i - pad_top
+                        color.0.clone()
                     };
 
-                    if swapped {
-                        (
-                            idx_small.min(small_lines.len().saturating_sub(1)),
-                            idx_big.min(big_lines.len().saturating_sub(1)),
-                        )
-                    } else {
-                        (
-                            idx_big.min(big_lines.len().saturating_sub(1)),
-                            idx_small.min(small_lines.len().saturating_sub(1)),
-                        )
+                    let offset = (j as f32) / ((line.len() - 1) as f32) * 100.0;
+                    rsx! {
+                        stop {
+                            offset: "{offset}%",
+                            stop_color: "{color}",
+                        }
                     }
                 })
-                .collect::<Vec<_>>(),
-        )
-    } else {
-        None
-    };
-
-    // Precompute gradient elements for RSX
-    let gradient_defs = gradients.as_ref().map(|grads| {
-        rsx!(
-            defs {
-                for (i, (idx1, idx2)) in grads.iter().enumerate() {
-                    {
-                        let color1 = if swapped {
-                            small_lines.get(*idx1).cloned().unwrap_or_else(|| "#000000".to_string())
-                        } else {
-                            big_lines.get(*idx1).cloned().unwrap_or_else(|| "#000000".to_string())
-                        };
-                        let color2 = if swapped {
-                            big_lines.get(*idx2).cloned().unwrap_or_else(|| "#000000".to_string())
-                        } else {
-                            small_lines.get(*idx2).cloned().unwrap_or_else(|| "#000000".to_string())
-                        };
-
-                        rsx!(
-                            linearGradient {
-                                id: format!("grad{i}"),
-                                x1: "10%", x2: "90%",
-                                y1: "0%", y2: "0%",
-                                stop { offset: "0%", stop_color: "{color1}" }
-                                stop { offset: "100%", stop_color: "{color2}" }
-                            }
-                        )
+                .collect();
+            rsx! {
+                linearGradient {
+                    id: "grad{id}-{i}",
+                    x1: "{hardness}%",
+                    y1: "0%",
+                    x2: "{100.-hardness}%",
+                    y2: "0%",
+                    for s in stops {
+                        {s}
                     }
                 }
             }
-        )
-    });
+        })
+        .collect();
+
+    let stripe_height = height as f32 / (flag.lines.len() as f32);
+    let len = flag.lines.len();
+
+    let symbols: Vec<Element> = if props.option_icons {
+        flag.symbols
+            .iter()
+            .map(|(symbol, position)| {
+                let asset = get_asset!(symbol.src.as_str());
+
+                let t = match position {
+                    Position::Single => &symbol.single,
+                    Position::MergedLeft => &symbol.merged_left,
+                    Position::MergedRight => &symbol.get_merged_right(width),
+                };
+
+                let transform = if *position == Position::MergedRight && symbol.mirror {
+                    format!("translate({width} 0) scale(-1 1)")
+                } else {
+                    String::new()
+                };
+
+                rsx! {
+                    image {
+                        href: "{asset}",
+                        x: "{t.x}",
+                        y: "{t.y}",
+                        width: "{t.width}",
+                        height: "{t.height}",
+                        transform: "{transform}",
+                    }
+                }
+            })
+            .collect()
+    } else {
+        vec![]
+    };
 
     rsx! {
         svg {
-            id,
+            id: id.to_string(),
             width,
             height,
             view_box: format!("0 0 {width} {height}"),
             shape_rendering: "crispEdges",
-            {gradient_defs}
+            opacity: if let Some(other) = &props.other_flag && !FlagData::is_compatible(&flag, other) { 0.4 } else { 1.0 },
+            defs {
+                for g in gradients {
+                    {g}
+                },
+                filter {
+                    id: "blur{id}",
+                    x: "-20%",
+                    y: "-20%",
+                    width: "140%",
+                    height: "140%",
 
-            for i in 0..count {
-                rect {
-                    width,
-                    height: stripe_height,
-                    y: stripe_height * (i as f32),
-                    fill: match &flag {
-                        PrideFlag::Single(data) => data.lines[i].to_string(),
-                        PrideFlag::Merged(_, _) => format!("url(#grad{i})"),
-                    },
-                    shape_rendering: "crispEdges"
+                    // Extract RGB, force alpha to 1
+                    feColorMatrix {
+                        "in": "SourceGraphic",
+                        type: "matrix",
+                        values: "
+                            1 0 0 0 0
+                            0 1 0 0 0
+                            0 0 1 0 0
+                            0 0 0 0 1
+                        ",
+                        result: "rgb"
+                    }
+
+                    feGaussianBlur {
+                        "in": "rgb",
+                        std_deviation: props.option_blur,
+                        result: "blurred"
+                    }
+
+                    // Re-apply original alpha
+                    feComposite {
+                        "in": "blurred",
+                        in2: "SourceGraphic",
+                        operator: "in"
+                    }
                 }
-            }
+            },
 
-            {
-                match &flag {
-                    PrideFlag::Single(data) => rsx!{
-                        if let Some(symbol) = &data.symbol && let Some(a) = IMG_ASSETS.get(symbol.src.as_str()) {
-                            image {
-                                x: symbol.single.x,
-                                y: symbol.single.y,
-                                width: symbol.single.width,
-                                height: symbol.single.height,
-                                href: "{a}",
-                            }
-                        }
+            g {
+                filter: "url(#blur{id})",
+                for i in 0..len {
+                    rect {
+                        width,
+                        height: stripe_height,
+                        y: stripe_height * (i as f32),
+                        fill: format!("url(#grad{id}-{i})"),
+                        shape_rendering: "crispEdges"
                     },
-                    PrideFlag::Merged(data1, data2) => rsx!{
-                         if let Some(symbol) = &data1.symbol && let Some(a) = IMG_ASSETS.get(symbol.src.as_str()) {
-                            image {
-                                x: symbol.merged_left.x,
-                                y: symbol.merged_left.y,
-                                width: symbol.merged_left.width,
-                                height: symbol.merged_left.height,
-                                href: "{a}",
-                            }
-                        }
-                         if let Some(symbol) = &data2.symbol && let Some(a) = IMG_ASSETS.get(symbol.src.as_str()) {
-                            image {
-                                x: width - symbol.merged_left.x - symbol.merged_left.width,
-                                y: symbol.merged_left.y,
-                                width: symbol.merged_left.width,
-                                height: symbol.merged_left.height,
-                                href: "{a}",
-                                transform: if let Some(true) = data2.mirror_symbol {
-                                    format!("translate({} 0) scale(-1 1)", width - symbol.merged_left.x)
-                                } else {"" }
-                            }
-                        }
-                    },
+                },
+                for s in symbols {
+                    {s}
                 }
             }
         }

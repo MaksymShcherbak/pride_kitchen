@@ -1,21 +1,14 @@
 [application]
+name = "pride_kitchen"
+asset_dir = "assets"
 
 [web.app]
+title = "Pride Kitchen 🍴"
 
-# HTML title tag content
-title = "pride_flag_mixer"
+[web.watcher]
+index_on_404 = true
 
-# include `assets` in web platform
-[web.resource]
-
-# Additional CSS style files
-style = []
-
-# Additional JavaScript files
-script = []
-
-[web.resource.dev]
-
-# Javascript code file
-# serve: [dev-server] only
-script = []
+[bundle]
+identifier = "com.maksymshcherbak.pridemixer"
+icon = ["favicon.ico"]
+resources = ["*", "*/*"]

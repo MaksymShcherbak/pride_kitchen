@@ -1,20 +1,27 @@
-use dioxus::{
-    logger::tracing::{self, Level},
-    prelude::*,
-};
-use std::collections::HashMap;
+use dioxus::prelude::*;
+use std::sync::LazyLock;
 
-// We use the build.rs to generate some static build files
-// IMG_ASSETS: HashMap<&'static str, Asset>
-// FLAGS: Vec<FlagData>
+use crate::flag_lib::{FlagData, FlagDataJSON};
+
+// IMG_ASSETS: LazyLock<HashMap<&'static str, Asset>>
 include!(concat!(env!("OUT_DIR"), "/assets.rs"));
 
-const FAVICON: Asset = asset!("/assets/favicon.ico");
-const CSS: Asset = asset!("/assets/main.css");
+static FLAGS_JSON: LazyLock<Vec<FlagDataJSON>> = LazyLock::new(|| {
+    serde_json::from_str(include_str!("../assets/flags.json")).expect("Invalid flags.json")
+});
+static FLAGS: LazyLock<Vec<FlagData>> =
+    LazyLock::new(|| FLAGS_JSON.iter().map(FlagData::from_json).collect());
+
+#[macro_export]
+macro_rules! get_asset {
+    ($name:expr) => {
+        *$crate::IMG_ASSETS.get($name).unwrap()
+    };
+}
 
 mod app;
 mod flag;
+mod flag_lib;
 fn main() {
-    dioxus::logger::init(Level::DEBUG).expect("failed to init logger");
     dioxus::launch(app::App);
 }

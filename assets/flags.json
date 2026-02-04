@@ -24,6 +24,7 @@
     "name": "Gayromantic",
     "lines": ["#3E7D5A", "#9AEBA3", "#FFFFFF", "#7AB7E6", "#2C2F4A"],
     "symbol": {
+      "mirror": false,
       "src": "heart.svg",
       "single": {
         "x": 160,
@@ -65,6 +66,7 @@
     "name": "Lesromantic",
     "lines": ["#D52D00", "#FF9A56", "#FFFFFF", "#D362A4", "#A30262"],
     "symbol": {
+      "mirror": false,
       "src": "heart.svg",
       "single": {
         "x": 160,
@@ -92,6 +94,7 @@
     "name": "Biromantic",
     "lines": ["#D60270", "#D60270", "#9B4F96", "#0038A8", "#0038A8"],
     "symbol": {
+      "mirror": false,
       "src": "heart.svg",
       "single": {
         "x": 160,
@@ -193,6 +196,7 @@
     "name": "Intersex",
     "lines": ["#FFD800"],
     "symbol": {
+      "mirror": false,
       "src": "intersex.svg",
       "single": {
         "x": 50,
@@ -219,6 +223,7 @@
       "romantic orientation"
     ],
     "symbol": {
+      "mirror": true,
       "src": "progress.svg",
       "single": {
         "x": 0,
@@ -232,8 +237,7 @@
         "width": 250,
         "height": 160
       }
-    },
-    "mirror_symbol": true
+    }
   },
   {
     "full_name": "Nonbinary Men",
@@ -241,6 +245,7 @@
     "categories": ["gender identity"],
     "lines": ["#b20afc", "#2707ab", "#fefffe", "#11b8ed", "#010001"],
     "symbol": {
+      "mirror": false,
       "src": "nbmen.svg",
       "single": {
         "x": 95,
@@ -320,6 +325,7 @@
     ],
     "categories": ["other"],
     "symbol": {
+      "mirror": false,
       "src": "bear.svg",
       "single": {
         "x": 10,
@@ -332,6 +338,145 @@
         "y": 5,
         "width": 80,
         "height": 80
+      }
+    }
+  },
+  {
+    "full_name": "Omnisexual",
+    "name": "Omnisexual",
+    "lines": ["#FF9CCE", "#FF52BF", "#200044", "#675FFF", "#8DA7FF"],
+    "categories": ["sexual orientation"]
+  },
+  {
+    "full_name": "Pride 1978 (Original)",
+    "name": "Pride 1978",
+    "lines": [
+      "#FF6599",
+      "#FF0000",
+      "#FF8E00",
+      "#FFFF00",
+      "#008E00",
+      "#00C0C0",
+      "#400098",
+      "#8E008E"
+    ],
+    "categories": [
+      "sexual orientation",
+      "gender identity",
+      "romantic orientation"
+    ]
+  },
+  {
+    "full_name": "Heterosexual",
+    "name": "Hetero",
+    "lines": ["#000000", "#FFFFFF", "#000000", "#FFFFFF", "#000000", "#FFFFFF"],
+    "categories": ["sexual orientation"]
+  },
+  {
+    "full_name": "Czech Republic",
+    "name": "Czech",
+    "lines": ["#FFFFFF", "#D7141A"],
+    "categories": ["other"],
+    "symbol": {
+      "mirror": true,
+      "src": "czech.svg",
+      "single": {
+        "x": 0,
+        "y": -3,
+        "width": 250,
+        "height": 160
+      },
+      "merged_left": {
+        "x": 0,
+        "y": -3,
+        "width": 250,
+        "height": 160
+      }
+    }
+  },
+  {
+    "full_name": "Trigender",
+    "name": "Trigender",
+    "lines": ["#FF95C5", "#9581FF", "#67D966", "#9581FF", "#FF95C5"],
+    "categories": ["gender identity"]
+  },
+  {
+    "full_name": "Twink Pride",
+    "name": "Twink",
+    "lines": ["#FFB0FF", "#FFFFFF", "#FFFF80"],
+    "categories": ["other"],
+    "symbol": {
+      "mirror": false,
+      "src": "twink.svg",
+      "single": {
+        "x": 95,
+        "y": 45,
+        "width": 60,
+        "height": 60
+      },
+      "merged_left": {
+        "x": 10,
+        "y": 45,
+        "width": 60,
+        "height": 60
+      }
+    }
+  },
+  {
+    "full_name": "Butch",
+    "name": "Butch",
+    "lines": [
+      "#D62C00",
+      "#F07528",
+      "#FF9B57",
+      "#FFFFFF",
+      "#FFCD88",
+      "#FFAD09",
+      "#A16F00"
+    ],
+    "categories": ["other"]
+  },
+  {
+    "full_name": "Achillean",
+    "name": "Achillean",
+    "lines": ["#9AC6E9", "#FAFDEA", "#9AC6E9"],
+    "categories": ["sexual orientation"],
+    "symbol": {
+      "mirror": false,
+      "src": "achillean.svg",
+      "single": {
+        "x": 85,
+        "y": 35,
+        "width": 80,
+        "height": 80
+      },
+      "merged_left": {
+        "x": 10,
+        "y": 35,
+        "width": 80,
+        "height": 80
+      }
+    }
+  },
+  {
+    "full_name": "Saphic",
+    "name": "Saphic",
+    "lines": ["#FD8BA8", "#FBF2FF", "#FD8BA8"],
+    "categories": ["sexual orientation"],
+    "symbol": {
+      "mirror": false,
+      "src": "saphic.svg",
+      "single": {
+        "x": 65,
+        "y": 15,
+        "width": 120,
+        "height": 120
+      },
+      "merged_left": {
+        "x": -30,
+        "y": 15,
+        "width": 120,
+        "height": 120
       }
     }
   }

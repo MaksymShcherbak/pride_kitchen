@@ -11,21 +11,12 @@ fn main() {
     let assets_dir = PathBuf::from(&base_dir).join("./assets");
 
     let img_assets_dir = assets_dir.join("./symbols");
-    let flags_path = assets_dir.join("./flags.json");
 
     let mut code = String::new();
-    code.push_str(&format!(
-        "static FLAGS_JSON: &str = include_str!(\"{}\");",
-        flags_path.to_string_lossy().replace("\\", "/")
-    ));
-
     code.push_str(
         r#"
-lazy_static::lazy_static! {
-    pub static ref FLAGS: Vec<crate::flag::FlagData> = serde_json::from_str(FLAGS_JSON).expect("Invalid flags.json");
-
-    pub static ref IMG_ASSETS: HashMap<&'static str, Asset> = {
-        let mut map = HashMap::new();
+static IMG_ASSETS: std::sync::LazyLock<std::collections::HashMap<&'static str, dioxus::prelude::Asset>> = std::sync::LazyLock::new(|| {
+    let mut map = std::collections::HashMap::new();
 "#,
     );
 
@@ -42,7 +33,7 @@ lazy_static::lazy_static! {
         }
     }
 
-    code.push_str("        map\n    };\n}\n");
+    code.push_str("map});");
 
     fs::write(&dest_path, code).unwrap();
 

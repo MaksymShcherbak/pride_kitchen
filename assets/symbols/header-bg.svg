@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     preserveAspectRatio="none"
+     shape-rendering="crispEdges"
+     id="result"
+     width="250"
+     height="150"
+     viewBox="0 0 250 150"
+     opacity="0.5">
+
+  <defs>
+    <linearGradient x1="10%" x2="90%" y1="0%" y2="0%" id="grad0">
+      <stop offset="0%" stop-color="#3E7D5A"/>
+      <stop offset="100%" stop-color="#D52D00"/>
+    </linearGradient>
+    <linearGradient x1="10%" x2="90%" y1="0%" y2="0%" id="grad1">
+      <stop offset="0%" stop-color="#9AEBA3"/>
+      <stop offset="100%" stop-color="#FF9A56"/>
+    </linearGradient>
+    <linearGradient x1="10%" x2="90%" y1="0%" y2="0%" id="grad2">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FFFFFF"/>
+    </linearGradient>
+    <linearGradient x1="10%" x2="90%" y1="0%" y2="0%" id="grad3">
+      <stop offset="0%" stop-color="#7AB7E6"/>
+      <stop offset="100%" stop-color="#D362A4"/>
+    </linearGradient>
+    <linearGradient x1="10%" x2="90%" y1="0%" y2="0%" id="grad4">
+      <stop offset="0%" stop-color="#2C2F4A"/>
+      <stop offset="100%" stop-color="#A30262"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="250" height="30" y="0" fill="url(#grad0)"/>
+  <rect width="250" height="30" y="30" fill="url(#grad1)"/>
+  <rect width="250" height="30" y="60" fill="url(#grad2)"/>
+  <rect width="250" height="30" y="90" fill="url(#grad3)"/>
+  <rect width="250" height="30" y="120" fill="url(#grad4)"/>
+</svg>
