@@ -9,6 +9,6 @@ title = "Pride Kitchen 🍴"
 index_on_404 = true
 
 [bundle]
-identifier = "com.maksymshcherbak.pridemixer"
+identifier = "com.maksymshcherbak.pridekitchen"
 icon = ["favicon.ico"]
 resources = ["*", "*/*"]

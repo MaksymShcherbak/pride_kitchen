@@ -1,28 +1,51 @@
-# Development
+# Pride Kitchen 🍴
 
-Your new bare-bones project includes minimal organization with a single `main.rs` file and a few assets.
+![](index.png)
 
+Mix & Match Pride Flags in this interactive app, creating unique and colorful combinations!
+
+## Features
+
+- 🏳‍🌈 **20+ flags** for various identities
+- 🎨 Customizable options
+- 💾 Download your creations as PNG or SVG.
+
+## Tech Stack
+
+- [🦀 Rust](\https://rust-lang.org/) Programming Language.
+- [🧬 Dioxus](https://dioxuslabs.com/) UI framework (Rust-based).
+- [🌐 WASM](https://webassembly.org/) for web deployment.
+
+## Build Requirements
+
+If you want to build and run the project locally, ensure you have the following installed:
+
+- Rust toolchain (stable) with `cargo`.
+
+- Dioxus CLI (`dx`) for an easier web development server.
+
+```bash
+cargo install dioxus-cli --version 0.7.3
 ```
-project/
-├─ assets/ # Any assets that are used by the app should be placed here
-├─ src/
-│  ├─ main.rs # main.rs is the entry point to your application and currently contains all components for the app
-├─ Cargo.toml # The Cargo.toml file defines the dependencies and feature flags for your project
+
+- The `wasm32-unknown-unknown` target.
+
+```bash
+rustup target add wasm32-unknown-unknown
 ```
 
+## Running the App
 
-
-### Serving Your App
-
-Run the following command in the root of your project to start developing with the default platform:
+Run the web server:
 
 ```bash
 dx serve
 ```
 
-To run for a different platform, use the `--platform platform` flag. E.g.
+## Deploy
+
+To build the project for deployment:
+
 ```bash
-dx serve --platform desktop
+dx build --release
 ```
-
-

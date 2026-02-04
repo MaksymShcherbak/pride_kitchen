@@ -1,5 +1,10 @@
 [build]
-command = "rustup default stable && cargo install --locked dioxus-cli --version 0.7.3 && dx build --release"
+command = """
+rustup default stable &&
+rustup target add wasm32-unknown-unknown &&
+cargo install --locked dioxus-cli --version 0.7.3 &&
+dx build --release
+"""
 publish = "target/web"
 
 [[redirects]]
